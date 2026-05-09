@@ -17,6 +17,16 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui   = LocalPlayer:WaitForChild("PlayerGui")
 local Mouse       = LocalPlayer:GetMouse()
 
+--// CoreGui safe wrapper (uses CoreGui so the UI always renders above Roblox overlays,
+--// including the escape menu, chat, and the default topbar)
+local function safeParent()
+	local ok, result = pcall(function()
+		return CoreGui
+	end)
+	return (ok and result) or PlayerGui
+end
+local UIParent = safeParent()
+
 --// ─────────────────────────────────────────────────────────────
 --//  THEME
 --// ─────────────────────────────────────────────────────────────
@@ -133,10 +143,11 @@ end
 --//  NOTIFICATION ENGINE
 --// ─────────────────────────────────────────────────────────────
 local NotifyGui = new("ScreenGui", {
-	Name           = "NeonNotifications",
-	ResetOnSpawn   = false,
-	DisplayOrder   = 999,
-}, PlayerGui)
+	Name            = "NeonNotifications",
+	ResetOnSpawn    = false,
+	DisplayOrder    = 9999,
+	IgnoreGuiInset  = true,
+}, UIParent)
 
 local NotifyHolder = new("Frame", {
 	Size                = UDim2.new(0, 290, 1, 0),
@@ -239,19 +250,19 @@ NeonLib.Components = {}
 -- ── SECTION LABEL ──────────────────────────────────────────────
 function NeonLib.Components.Section(parent, cfg)
 	local frame = new("Frame", {
-		Size             = UDim2.new(1, -20, 0, 26),
+		Size             = UDim2.new(1, -16, 0, 28),
 		BackgroundTransparency = 1,
 		Parent           = parent,
 	})
 	new("TextLabel", {
 		Text             = (cfg.Title or "Section"):upper(),
-		Size             = UDim2.new(1, 0, 1, 0),
+		Size             = UDim2.new(1, 0, 0, 16),
+		Position         = UDim2.new(0, 0, 0, 8),
 		TextColor3       = T.Accent,
 		BackgroundTransparency = 1,
 		Font             = Enum.Font.GothamBold,
 		TextSize         = 10,
 		TextXAlignment   = Enum.TextXAlignment.Left,
-		LetterSpacing    = 4,
 		Parent           = frame,
 	})
 	new("Frame", {
@@ -267,7 +278,7 @@ end
 -- ── BUTTON ─────────────────────────────────────────────────────
 function NeonLib.Components.Button(parent, cfg)
 	local btn = new("TextButton", {
-		Size             = UDim2.new(1, -20, 0, 38),
+		Size             = UDim2.new(1, 0, 0, 38),
 		BackgroundColor3 = T.Elevated,
 		Text             = "",
 		AutoButtonColor  = false,
@@ -300,7 +311,7 @@ function NeonLib.Components.Button(parent, cfg)
 			TextXAlignment   = Enum.TextXAlignment.Left,
 			Parent           = btn,
 		})
-		btn.Size = UDim2.new(1, -20, 0, 52)
+		btn.Size = UDim2.new(1, 0, 0, 52)
 	end
 
 	-- right arrow indicator
@@ -338,7 +349,7 @@ function NeonLib.Components.Toggle(parent, cfg)
 	local state = cfg.Default or false
 
 	local frame = new("Frame", {
-		Size             = UDim2.new(1, -20, 0, 42),
+		Size             = UDim2.new(1, 0, 0, 42),
 		BackgroundColor3 = T.Elevated,
 		Parent           = parent,
 	})
@@ -406,7 +417,7 @@ function NeonLib.Components.Slider(parent, cfg)
 	local suffix = cfg.Suffix or ""
 
 	local frame = new("Frame", {
-		Size             = UDim2.new(1, -20, 0, 56),
+		Size             = UDim2.new(1, 0, 0, 56),
 		BackgroundColor3 = T.Elevated,
 		Parent           = parent,
 	})
@@ -513,7 +524,7 @@ function NeonLib.Components.Dropdown(parent, cfg)
 	local open     = false
 
 	local wrap = new("Frame", {
-		Size             = UDim2.new(1, -20, 0, 42),
+		Size             = UDim2.new(1, 0, 0, 42),
 		BackgroundTransparency = 1,
 		ClipsDescendants = false,
 		Parent           = parent,
@@ -664,7 +675,7 @@ end
 -- ── TEXT INPUT ─────────────────────────────────────────────────
 function NeonLib.Components.Input(parent, cfg)
 	local frame = new("Frame", {
-		Size             = UDim2.new(1, -20, 0, 52),
+		Size             = UDim2.new(1, 0, 0, 52),
 		BackgroundColor3 = T.Elevated,
 		Parent           = parent,
 	})
@@ -720,7 +731,7 @@ function NeonLib.Components.Keybind(parent, cfg)
 	local binding = false
 
 	local frame = new("Frame", {
-		Size             = UDim2.new(1, -20, 0, 42),
+		Size             = UDim2.new(1, 0, 0, 42),
 		BackgroundColor3 = T.Elevated,
 		Parent           = parent,
 	})
@@ -780,7 +791,7 @@ function NeonLib.Components.ColorPicker(parent, cfg)
 	local open   = false
 
 	local frame = new("Frame", {
-		Size             = UDim2.new(1, -20, 0, 42),
+		Size             = UDim2.new(1, 0, 0, 42),
 		BackgroundColor3 = T.Elevated,
 		ClipsDescendants = false,
 		Parent           = parent,
@@ -984,10 +995,11 @@ function NeonLib:CreateWindow(cfg)
 	win._activeTab = nil
 
 	local gui = new("ScreenGui", {
-		Name           = "NeonLib_" .. (cfg.Name or "Window"),
-		ResetOnSpawn   = false,
-		DisplayOrder   = 100,
-		Parent         = PlayerGui,
+		Name            = "NeonLib_" .. (cfg.Name or "Window"),
+		ResetOnSpawn    = false,
+		DisplayOrder    = 9998,
+		IgnoreGuiInset  = true,
+		Parent          = UIParent,
 	})
 
 	-- ── MAIN FRAME ──────────────────────────────────────────────
